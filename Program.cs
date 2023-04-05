@@ -11,19 +11,29 @@ namespace SimpleMazeGame
         static int exitX = 0;
         static int exitY = 0;
         
-        const int width = 21;
-        const int height = 21;
+        // configuration
+        static int width = 10;
+        static int height = 10;
         
         const char player = '■';
-        const char exit = 'E';
+        const char exit = '▒';
         const char wall = '#';
         const char path = ' ';
-        const char border = '|';
+        const char border = '│';
+        
+        const ConsoleColor playerColor = ConsoleColor.Red;
+        const ConsoleColor exitColor = ConsoleColor.Green;
+        const ConsoleColor wallColor = ConsoleColor.Yellow;
+        const ConsoleColor pathColor = ConsoleColor.Black;
+        const ConsoleColor borderColor = ConsoleColor.Black;
         
         static void Main(string[] args)
         {
+            int currentLevel = GetCurrentLevel();
             // seed is current time in milliseconds
             int seed = (int)DateTime.Now.Ticks / 10000;
+            width += currentLevel;
+            height += currentLevel;
             bool[,] walls = GenerateMaze(width, height, seed);
 
             bool gameOver = false;
@@ -84,42 +94,66 @@ namespace SimpleMazeGame
                 }
             }
 
-            Console.WriteLine("Press any key to exit.");
+            Console.WriteLine("Press any key to exit. Your next level will be harder!");
+            // get current path to the executable
+            LevelUp();
             Console.ReadKey();
+        }
+        
+        static int GetCurrentLevel()
+        {
+            return System.IO.File.Exists(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/level.txt") ? int.Parse(System.IO.File.ReadAllText(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/level.txt")) : 1;
+        }
+        
+        static void LevelUp()
+        {
+            int currentLevel = GetCurrentLevel();
+            currentLevel++;
+            System.IO.File.WriteAllText(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/level.txt", currentLevel.ToString());
         }
 
         private static void DrawMaze(bool[,] walls)
         {
+            // if platform is windows 
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                // set the console window size to the maze size
+                Console.SetWindowSize(width * 2, height + 1);
+                Console.SetBufferSize(width * 3, height * 3);
+            }
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     if (x == playerX && y == playerY)
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.ForegroundColor = playerColor;
                         Console.Write(player);
                         Console.ResetColor();
                     }
                     else if (x == exitX && y == exitY)
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.ForegroundColor = exitColor;
                         Console.Write(exit);
                         Console.ResetColor();
                     }
                     else if (walls[y, x])
                     {
-                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        Console.ForegroundColor = wallColor;
                         Console.Write(wall);
                         Console.ResetColor();
                     }
                     else
                     {
+                        Console.ForegroundColor = pathColor;
                         Console.Write(path);
+                        Console.ResetColor();
                     }
                     
+                    Console.ForegroundColor = borderColor;
                     Console.Write(border);
+                    Console.ResetColor();
                 }
-
                 Console.WriteLine();
             }
         }
@@ -153,10 +187,10 @@ namespace SimpleMazeGame
             Random rand = new Random(seed);
 
             // level generation using recursive backtracking
-            int startX = rand.Next(1, width - 2);
-            int startY = rand.Next(1, height - 2);
+            int startX = rand.Next(0, width - 2);
+            int startY = rand.Next(0, height - 2);
             RecursiveBacktracking(maze, startX, startY, rand);
-            
+
             // add random points to the maze with open paths
             for (int i = 0; i < width / 2; i++)
             {
@@ -164,21 +198,14 @@ namespace SimpleMazeGame
                 int y = rand.Next(1, height - 2);
                 maze[x, y] = false;
             }
-            
-            Random rand2 = new Random(seed + 1);
             // place finish at random location
-            int finishX = rand2.Next(1, width - 2);
-            int finishY = rand2.Next(1, height - 2);
+            int finishX = rand.Next(1, width - 2);
+            int finishY = rand.Next(1, height - 2);
             maze[finishX, finishY] = false;
-            
-            maze[finishX + 1, finishY] = false;
-            maze[finishX - 1, finishY] = false;
-            maze[finishX, finishY + 1] = false;
-            maze[finishX, finishY - 1] = false;
-            
+
             exitX = finishX;
             exitY = finishY;
-
+            
             return maze;
         }
 
