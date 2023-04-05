@@ -35,6 +35,14 @@ namespace SimpleMazeGame
             width += currentLevel;
             height += currentLevel;
             bool[,] walls = GenerateMaze(width, height, seed);
+            // place finish at random location
+            Random rand = new Random(seed);
+            int finishX = rand.Next(1, width - 2);
+            int finishY = rand.Next(1, height - 2);
+            walls[finishX, finishY] = false;
+
+            exitX = finishX;
+            exitY = finishY;
 
             bool gameOver = false;
 
@@ -149,7 +157,8 @@ namespace SimpleMazeGame
                         Console.Write(path);
                         Console.ResetColor();
                     }
-                    
+
+
                     Console.ForegroundColor = borderColor;
                     Console.Write(border);
                     Console.ResetColor();
@@ -198,13 +207,7 @@ namespace SimpleMazeGame
                 int y = rand.Next(1, height - 2);
                 maze[x, y] = false;
             }
-            // place finish at random location
-            int finishX = rand.Next(1, width - 2);
-            int finishY = rand.Next(1, height - 2);
-            maze[finishX, finishY] = false;
-
-            exitX = finishX;
-            exitY = finishY;
+            
             
             return maze;
         }
