@@ -102,17 +102,21 @@ namespace SimpleMazeGame
                     }
                     else if (x == exitX && y == exitY)
                     {
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write(exit);
+                        Console.ResetColor();
                     }
                     else if (walls[y, x])
                     {
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
                         Console.Write(wall);
+                        Console.ResetColor();
                     }
                     else
                     {
                         Console.Write(path);
                     }
-
+                    
                     Console.Write(border);
                 }
 
@@ -154,17 +158,24 @@ namespace SimpleMazeGame
             RecursiveBacktracking(maze, startX, startY, rand);
             
             // add random points to the maze with open paths
-            for (int i = 0; i < width / 3; i++)
+            for (int i = 0; i < width / 2; i++)
             {
                 int x = rand.Next(1, width - 2);
                 int y = rand.Next(1, height - 2);
                 maze[x, y] = false;
             }
             
+            Random rand2 = new Random(seed + 1);
             // place finish at random location
-            int finishX = rand.Next(1, width - 2);
-            int finishY = rand.Next(1, height - 2);
+            int finishX = rand2.Next(1, width - 2);
+            int finishY = rand2.Next(1, height - 2);
             maze[finishX, finishY] = false;
+            
+            maze[finishX + 1, finishY] = false;
+            maze[finishX - 1, finishY] = false;
+            maze[finishX, finishY + 1] = false;
+            maze[finishX, finishY - 1] = false;
+            
             exitX = finishX;
             exitY = finishY;
 
